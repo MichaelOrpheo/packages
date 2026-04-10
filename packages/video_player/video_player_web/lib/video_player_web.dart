@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:ui_web' as ui_web;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
@@ -23,6 +24,9 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
 
   // Map of playerId -> VideoPlayer instances.
   final Map<int, VideoPlayer> _videoPlayers = <int, VideoPlayer>{};
+
+  // Always reuse the same videoElement on iOS (workaround for autoplay)
+  final web.HTMLVideoElement _sharedVideoElement = web.HTMLVideoElement();
 
   int _playerCounter = 1;
 
@@ -90,7 +94,7 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
         );
     }
 
-    final videoElement = web.HTMLVideoElement()
+    final videoElement = (defaultTargetPlatform == TargetPlatform.iOS ? _sharedVideoElement : web.HTMLVideoElement())
       ..id = 'videoElement-$playerId'
       ..style.border = 'none'
       ..style.height = '100%'
